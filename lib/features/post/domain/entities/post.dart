@@ -1,0 +1,59 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:socialapp/features/post/domain/entities/comment.dart';
+
+class Post {
+  final String id;
+  final String userid;
+  final String userName;
+  final String text;
+  final DateTime timeStamp;
+  final List<String> likes;
+  final List<String> saves;
+  final List<Comment> comments;
+
+  Post({
+    required this.id,
+    required this.userid,
+    required this.userName,
+    required this.text,
+    required this.timeStamp,
+    required this.likes,
+    required this.saves,
+    required this.comments,
+  });
+
+  //convert post to json
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userid': userid,
+      'userName': userName,
+      'text': text,
+      'timeStamp': timeStamp,
+      'likes': likes,
+      'saves': saves,
+      'comments': comments.map((comment) => comment.toJson()),
+    };
+  }
+
+  //convert json to post
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    final List<Comment> comments = (json['comments'] as List<dynamic>?)
+            ?.map((commentJson) => Comment.fromJson(commentJson))
+            .toList() ??
+        [];
+    return Post(
+      id: json['id'],
+      userid: json['userid'],
+      userName: json['userName'],
+      text: json['text'],
+      timeStamp: (json['timeStamp'] as Timestamp).toDate(),
+      likes: List<String>.from(json['likes'] ?? []),
+      saves: List<String>.from(json['saves'] ?? []),
+      comments: comments,
+    );
+  }
+}

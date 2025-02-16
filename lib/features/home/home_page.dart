@@ -1,0 +1,227 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
+import 'package:socialapp/features/home/presentation/components/post_tile.dart';
+import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
+import 'package:socialapp/features/post/presentation/cubits/post_states.dart';
+import 'package:socialapp/features/post/presentation/pages/upload_post_pages.dart';
+import 'package:socialapp/screens/screens2.dart';
+import 'package:socialapp/screens/screens3.dart';
+import 'package:socialapp/screens/screens4.dart';
+import 'package:socialapp/screens/section2.dart';
+import 'package:socialapp/screens/section3.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
+  int _currentIndex = 0;
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  final List<Widget> _screens = [
+    Container(), // Placeholder for TabBarView
+    Screens2(),
+    Screens3(),
+    Screens4(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('kaari घर', style: TextStyle(fontWeight: FontWeight.w500)),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UploadPostPages(),
+              ),
+            ),
+            icon: Icon(Icons.add),
+            iconSize: 30,
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.notifications_none),
+            iconSize: 30,
+          )
+        ],
+        bottom: _currentIndex == 0
+            ? TabBar(
+                isScrollable: true, // Allows horizontal scrolling
+                controller: _tabController,
+                tabs: const [
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons
+                            .precision_manufacturing), // Sewing Machine Icon
+                        SizedBox(width: 8), // Space between icon and text
+                        Text('Section 1'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons
+                            .error_outline), // Chat Bubble with Exclamation
+                        SizedBox(width: 8),
+                        Text('Section 2'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.account_tree), // Network Tree Icon
+                        SizedBox(width: 8),
+                        Text('Section 3'),
+                      ],
+                    ),
+                  ),
+                ],
+                labelColor: Colors.black, // Active tab text color
+                unselectedLabelColor: Colors.grey, // Inactive tab text color
+                indicator: BoxDecoration(
+                  color: Colors
+                      .grey.shade300, // Background highlight for active tab
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              )
+            : null,
+      ),
+      drawer: Drawer(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 150),
+            IconButton(
+              onPressed: () {
+                context.read<AuthCubit>().logout();
+              },
+              icon: Icon(Icons.logout),
+              iconSize: 80,
+            ),
+            Text(
+              "Logout",
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            )
+          ],
+        ),
+      ),
+      body: _currentIndex == 0
+          ? TabBarView(
+              controller: _tabController,
+              children: [
+                HomeFeedScreen(),
+                Section2Screen(),
+                Section3Screen() // Create this widget for Section 3 content
+              ],
+            )
+          : _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        iconSize: 35,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.business_center), label: 'Screen1'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Screen2'),
+          BottomNavigationBarItem(icon: Icon(Icons.call), label: 'Screen3'),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeFeedScreen extends StatefulWidget {
+  @override
+  State<HomeFeedScreen> createState() => _HomeFeedScreenState();
+}
+
+class _HomeFeedScreenState extends State<HomeFeedScreen> {
+  late final postCubit = context.read<PostCubit>();
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAllPosts();
+  }
+
+  void fetchAllPosts() {
+    postCubit.FetchAllPosts();
+  }
+
+  void deletePost(String postId) {
+    postCubit.DeletePost(postId);
+    fetchAllPosts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PostCubit, PostState>(
+      builder: (context, state) {
+        if (state is PostLoading && state is PostUploading) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is PostLoaded) {
+          final allPosts = state.posts;
+
+          if (allPosts.isEmpty) {
+            return Center(
+              child: Text("No Posts"),
+            );
+          }
+          return ListView.builder(
+            itemCount: allPosts.length,
+            itemBuilder: (context, index) {
+              final post = state.posts[index];
+              return PostTile(
+                post: post,
+                onDeletePressed: () => deletePost(post.id),
+              );
+            },
+          );
+        } else if (state is PostError) {
+          return Center(
+            child: Text(state.message),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+}
