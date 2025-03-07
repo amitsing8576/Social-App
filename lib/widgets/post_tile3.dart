@@ -40,6 +40,21 @@ class _PostTile3State extends State<PostTile3> {
     isOwnPost = (widget.post.userid == currentUser!.uid);
   }
 
+  String customTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return '${difference.inSeconds}s';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h';
+    } else {
+      return '${difference.inDays}d';
+    }
+  }
+
   void toggleLikePost() {
     final isLiked = widget.post.likes.contains(currentUser!.uid);
 
@@ -120,187 +135,207 @@ class _PostTile3State extends State<PostTile3> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Post Header
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  const SizedBox(width: 10),
-                  CircleAvatar(
-                    radius: 17,
-                    backgroundImage: AssetImage('assets/img.png'),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.post.userName,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                          //overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          widget.post.text,
-                          style: TextStyle(fontSize: 15),
-                          //overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        // Post Actions (Like, Comment, Save)
-        Row(
-          children: [
-            const SizedBox(width: 50),
-            GestureDetector(
-              onTap: toggleLikePost,
-              child: Icon(
-                size: 18,
-                widget.post.likes.contains(currentUser!.uid)
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-                color: widget.post.likes.contains(currentUser!.uid)
-                    ? Colors.red
-                    : null,
-              ),
-            ),
-            Text(widget.post.likes.length.toString(),
-                style: TextStyle(color: Colors.grey[500])),
-            const SizedBox(width: 20),
-            GestureDetector(
-              onTap: () => setState(() => showComments = !showComments),
-              child: Icon(Icons.comment_outlined, size: 18),
-            ),
-            Text(widget.post.comments.length.toString(),
-                style: TextStyle(color: Colors.grey[500])),
-            const SizedBox(width: 20),
-            GestureDetector(
-              onTap: togglesavePost,
-              child: Icon(
-                size: 18,
-                widget.post.saves.contains(currentUser!.uid)
-                    ? Icons.bookmark
-                    : Icons.bookmark_border,
-              ),
-            ),
-            Text(widget.post.saves.length.toString(),
-                style: TextStyle(color: Colors.grey[500])),
-            const Spacer(),
-            Icon(Icons.play_circle_outline_sharp, size: 18),
-            const SizedBox(width: 12),
-          ],
-        ),
-
-        Divider(thickness: 1, color: Colors.grey[300]),
-
-        // Show Comments Section when toggled
-        if (showComments)
-          Column(
+    return Padding(
+      padding: EdgeInsets.only(left: 15, right: 10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          // Post Header
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
             children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: 15,
-                  ),
-                  Text(
-                    "Replies",
-                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
-                  ),
-                ],
+              CircleAvatar(
+                radius: 17,
+                backgroundImage: AssetImage('assets/img.png'),
               ),
-              Divider(thickness: 1, color: Colors.grey[300]),
-              for (int i = 0; i < widget.post.comments.length; i++)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(width: 10),
+              Text(
+                widget.post.userName,
+                style: TextStyle(fontWeight: FontWeight.bold),
+                //overflow: TextOverflow.ellipsis,
+              ),
+              Spacer(),
+              Text(
+                customTimeAgo(widget.post.timeStamp),
+                style: TextStyle(
+                  color: Colors.grey,
+                ),
+              )
+            ],
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              widget.post.caption,
+              style: TextStyle(fontSize: 15),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              widget.post.text,
+              style: TextStyle(fontSize: 12),
+              //overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Post Actions (Like, Comment, Save)
+          Row(
+            children: [
+              //const SizedBox(width: 50),
+              GestureDetector(
+                onTap: toggleLikePost,
+                child: Icon(
+                  size: 18,
+                  widget.post.likes.contains(currentUser!.uid)
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: widget.post.likes.contains(currentUser!.uid)
+                      ? Colors.red
+                      : null,
+                ),
+              ),
+              Text(widget.post.likes.length.toString(),
+                  style: TextStyle(color: Colors.grey[500])),
+              const SizedBox(width: 20),
+              GestureDetector(
+                onTap: () {
+                  setState(() => showComments = !showComments);
+                  if (showComments) {
+                    openNewCommentBox();
+                  }
+                },
+                child: Icon(Icons.comment_outlined, size: 18),
+              ),
+              Text(widget.post.comments.length.toString(),
+                  style: TextStyle(color: Colors.grey[500])),
+              const SizedBox(width: 20),
+              GestureDetector(
+                onTap: togglesavePost,
+                child: Icon(
+                  size: 18,
+                  widget.post.saves.contains(currentUser!.uid)
+                      ? Icons.bookmark
+                      : Icons.bookmark_border,
+                ),
+              ),
+              Text(widget.post.saves.length.toString(),
+                  style: TextStyle(color: Colors.grey[500])),
+              const Spacer(),
+              Icon(Icons.play_circle_outline_sharp, size: 18),
+              const SizedBox(width: 12),
+            ],
+          ),
+
+          Divider(thickness: 1, color: Colors.grey[300]),
+
+          // Show Comments Section when toggled
+          if (showComments)
+            Column(
+              children: [
+                Row(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(30, 0, 0, 0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            children: [
-                              CircleAvatar(
-                                radius: 17,
-                                backgroundImage: AssetImage('assets/img.png'),
-                              ),
-                              if (i < widget.post.comments.length - 1)
-                                Container(
-                                  width: 2,
-                                  height:
-                                      widget.post.comments[i].text.length * 0.6,
-                                  color: Colors.grey[300],
-                                ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.post.comments[i].userName,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  widget.post.comments[i].text,
-                                  style: TextStyle(fontSize: 15),
-                                  maxLines: null, // Fix truncation issue
-                                  softWrap: true,
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  children: [
-                                    Icon(Icons.favorite_border, size: 18),
-                                    Text('0',
-                                        style:
-                                            TextStyle(color: Colors.grey[500])),
-                                    const SizedBox(width: 10),
-                                    Icon(Icons.comment_outlined, size: 18),
-                                    Text('0',
-                                        style:
-                                            TextStyle(color: Colors.grey[500])),
-                                    const SizedBox(width: 10),
-                                    Icon(Icons.bookmark_border, size: 18),
-                                    Text('0',
-                                        style:
-                                            TextStyle(color: Colors.grey[500])),
-                                    const Spacer(),
-                                    Icon(
-                                      Icons.play_circle_outline_sharp,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(
-                                      width: 12,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                    SizedBox(
+                      width: 15,
+                    ),
+                    Text(
+                      "Replies",
+                      style: TextStyle(fontSize: 14, color: Colors.grey[800]),
                     ),
                   ],
                 ),
-              Divider(thickness: 1, color: Colors.grey[300]),
-            ],
-          ),
-      ],
+                Divider(thickness: 1, color: Colors.grey[300]),
+                for (int i = 0; i < widget.post.comments.length; i++)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              children: [
+                                CircleAvatar(
+                                  radius: 17,
+                                  backgroundImage: AssetImage('assets/img.png'),
+                                ),
+                                if (i < widget.post.comments.length - 1)
+                                  Container(
+                                    width: 2,
+                                    height:
+                                        widget.post.comments[i].text.length *
+                                            0.6,
+                                    color: Colors.grey[300],
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.post.comments[i].userName,
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    widget.post.comments[i].text,
+                                    style: TextStyle(fontSize: 15),
+                                    maxLines: null, // Fix truncation issue
+                                    softWrap: true,
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.favorite_border, size: 18),
+                                      Text('0',
+                                          style: TextStyle(
+                                              color: Colors.grey[500])),
+                                      const SizedBox(width: 10),
+                                      Icon(Icons.comment_outlined, size: 18),
+                                      Text('0',
+                                          style: TextStyle(
+                                              color: Colors.grey[500])),
+                                      const SizedBox(width: 10),
+                                      Icon(Icons.bookmark_border, size: 18),
+                                      Text('0',
+                                          style: TextStyle(
+                                              color: Colors.grey[500])),
+                                      const Spacer(),
+                                      Icon(
+                                        Icons.play_circle_outline_sharp,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              customTimeAgo(widget.post.comments[i].timeStamp),
+                              style: TextStyle(
+                                color: Colors.grey,
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                Divider(thickness: 1, color: Colors.grey[300]),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }

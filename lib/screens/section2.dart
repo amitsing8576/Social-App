@@ -36,17 +36,19 @@ class Section2ScreenState extends State<Section2Screen> {
             child: CircularProgressIndicator(),
           );
         } else if (state is PostLoaded) {
-          final allPosts = state.posts;
+          // Filter posts for Section 2
+          final filteredPosts =
+              state.posts.where((post) => post.section == 'Section 2').toList();
 
-          if (allPosts.isEmpty) {
+          if (filteredPosts.isEmpty) {
             return Center(
-              child: Text("No Posts"),
+              child: Text("No Posts in Section 2"),
             );
           }
           return ListView.builder(
-            itemCount: allPosts.length,
+            itemCount: filteredPosts.length,
             itemBuilder: (context, index) {
-              final post = state.posts[index];
+              final post = filteredPosts[index];
               return PostTile3(
                 post: post,
                 onDeletePressed: () => deletePost(post.id),

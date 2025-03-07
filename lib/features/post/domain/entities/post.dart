@@ -7,6 +7,8 @@ class Post {
   final String userid;
   final String userName;
   final String text;
+  final String caption;
+  final String section;
   final DateTime timeStamp;
   final List<String> likes;
   final List<String> saves;
@@ -17,6 +19,8 @@ class Post {
     required this.userid,
     required this.userName,
     required this.text,
+    required this.caption,
+    required this.section,
     required this.timeStamp,
     required this.likes,
     required this.saves,
@@ -31,6 +35,8 @@ class Post {
       'userid': userid,
       'userName': userName,
       'text': text,
+      'caption': caption,
+      'section': section,
       'timeStamp': timeStamp,
       'likes': likes,
       'saves': saves,
@@ -50,6 +56,8 @@ class Post {
       userid: json['userid'],
       userName: json['userName'],
       text: json['text'],
+      caption: json['caption'],
+      section: json['section'],
       timeStamp: (json['timeStamp'] as Timestamp).toDate(),
       likes: List<String>.from(json['likes'] ?? []),
       saves: List<String>.from(json['saves'] ?? []),

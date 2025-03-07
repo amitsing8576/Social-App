@@ -6,6 +6,7 @@ import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/post/domain/entities/comment.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class PostTile extends StatefulWidget {
   final Post post;
@@ -20,6 +21,8 @@ class PostTile extends StatefulWidget {
 class _PostTileState extends State<PostTile> {
   bool isOwnPost = false;
   AppUser? currentUser;
+  bool isExpanded = false;
+  bool showComments = false;
   void toggleLikePost() {
     final isLiked = widget.post.likes.contains(currentUser!.uid);
 
@@ -43,6 +46,21 @@ class _PostTileState extends State<PostTile> {
         }
       });
     });
+  }
+
+  String customTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return '${difference.inSeconds}s';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h';
+    } else {
+      return '${difference.inDays}d';
+    }
   }
 
   void togglesavePost() {
@@ -134,11 +152,16 @@ class _PostTileState extends State<PostTile> {
   Widget build(BuildContext context) {
     List<String> words = widget.post.text.split(' ');
     bool shouldShowViewMore = words.length > 20;
-    String displayedText = shouldShowViewMore
-        ? words.take(12).join(' ') + '... View More'
-        : widget.post.text;
+    String displayedText = isExpanded
+        ? widget.post.text
+        : (shouldShowViewMore
+            ? words.take(17).join(' ') + '...'
+            : widget.post.text);
     return Column(
       children: [
+        const SizedBox(
+          height: 10,
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -163,12 +186,16 @@ class _PostTileState extends State<PostTile> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          displayedText,
+                          widget.post.caption,
                           style: TextStyle(fontSize: 15),
-                          overflow: TextOverflow.ellipsis,
+                          //overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
+                  ),
+                  Text(
+                    customTimeAgo(widget.post.timeStamp),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
@@ -179,6 +206,37 @@ class _PostTileState extends State<PostTile> {
                 icon: Icon(Icons.delete),
               ),
           ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 55.0, right: 10.0),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                isExpanded = !isExpanded; // Toggle full text
+              });
+            },
+            child: Container(
+              width: double.infinity,
+              alignment: Alignment.centerLeft,
+              child: RichText(
+                text: TextSpan(
+                  text: displayedText,
+                  style: TextStyle(fontSize: 11, color: Colors.black),
+                  children: shouldShowViewMore && !isExpanded
+                      ? [
+                          TextSpan(
+                            text: " View More",
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold),
+                          )
+                        ]
+                      : [],
+                ),
+              ),
+            ),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 50.0, right: 10.0),
@@ -218,7 +276,14 @@ class _PostTileState extends State<PostTile> {
               width: 20,
             ),
             GestureDetector(
-                onTap: openNewCommentBox, child: Icon(Icons.comment_outlined)),
+              onTap: () {
+                setState(() => showComments = !showComments);
+                if (showComments) {
+                  openNewCommentBox();
+                }
+              },
+              child: Icon(Icons.comment_outlined, size: 18),
+            ),
             Text(widget.post.comments.length.toString(),
                 style: TextStyle(color: Colors.grey[500])),
             const SizedBox(
@@ -241,6 +306,102 @@ class _PostTileState extends State<PostTile> {
           ],
         ),
         Divider(thickness: 2, color: Colors.grey[300]),
+        if (showComments)
+          Column(
+            children: [
+              Row(
+                children: [
+                  SizedBox(
+                    width: 15,
+                  ),
+                  Text(
+                    "Replies",
+                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                  ),
+                ],
+              ),
+              Divider(thickness: 1, color: Colors.grey[300]),
+              for (int i = 0; i < widget.post.comments.length; i++)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(30, 0, 0, 0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 17,
+                                backgroundImage: AssetImage('assets/img.png'),
+                              ),
+                              if (i < widget.post.comments.length - 1)
+                                Container(
+                                  width: 2,
+                                  height:
+                                      widget.post.comments[i].text.length * 0.6,
+                                  color: Colors.grey[300],
+                                ),
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.post.comments[i].userName,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  widget.post.comments[i].text,
+                                  style: TextStyle(fontSize: 15),
+                                  maxLines: null, // Fix truncation issue
+                                  softWrap: true,
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  children: [
+                                    Icon(Icons.favorite_border, size: 18),
+                                    Text('0',
+                                        style:
+                                            TextStyle(color: Colors.grey[500])),
+                                    const SizedBox(width: 10),
+                                    Icon(Icons.comment_outlined, size: 18),
+                                    Text('0',
+                                        style:
+                                            TextStyle(color: Colors.grey[500])),
+                                    const SizedBox(width: 10),
+                                    Icon(Icons.bookmark_border, size: 18),
+                                    Text('0',
+                                        style:
+                                            TextStyle(color: Colors.grey[500])),
+                                    const Spacer(),
+                                    Icon(
+                                      Icons.play_circle_outline_sharp,
+                                      size: 18,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            customTimeAgo(widget.post.comments[i].timeStamp),
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              Divider(thickness: 1, color: Colors.grey[300]),
+            ],
+          ),
       ],
     );
   }

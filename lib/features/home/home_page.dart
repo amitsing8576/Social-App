@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/home/presentation/components/post_tile.dart';
+import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_states.dart';
 import 'package:socialapp/features/post/presentation/pages/upload_post_pages.dart';
@@ -66,39 +67,44 @@ class _HomePageState extends State<HomePage>
         ],
         bottom: _currentIndex == 0
             ? TabBar(
-                isScrollable: true, // Allows horizontal scrolling
                 controller: _tabController,
                 tabs: const [
                   Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons
-                            .precision_manufacturing), // Sewing Machine Icon
-                        SizedBox(width: 8), // Space between icon and text
-                        Text('Section 1'),
-                      ],
+                    child: FittedBox(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons
+                              .precision_manufacturing), // Sewing Machine Icon
+                          SizedBox(width: 8), // Space between icon and text
+                          Text('Section 1'),
+                        ],
+                      ),
                     ),
                   ),
                   Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons
-                            .error_outline), // Chat Bubble with Exclamation
-                        SizedBox(width: 8),
-                        Text('Section 2'),
-                      ],
+                    child: FittedBox(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons
+                              .error_outline), // Chat Bubble with Exclamation
+                          SizedBox(width: 8),
+                          Text('Section 2'),
+                        ],
+                      ),
                     ),
                   ),
                   Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.account_tree), // Network Tree Icon
-                        SizedBox(width: 8),
-                        Text('Section 3'),
-                      ],
+                    child: FittedBox(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.account_tree), // Network Tree Icon
+                          SizedBox(width: 8),
+                          Text('Section 3'),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -142,6 +148,7 @@ class _HomePageState extends State<HomePage>
             )
           : _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         showSelectedLabels: false,
         showUnselectedLabels: false,
         currentIndex: _currentIndex,
@@ -197,17 +204,19 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
             child: CircularProgressIndicator(),
           );
         } else if (state is PostLoaded) {
-          final allPosts = state.posts;
+          // Filter posts for Section 1
+          final filteredPosts =
+              state.posts.where((post) => post.section == 'Section 1').toList();
 
-          if (allPosts.isEmpty) {
+          if (filteredPosts.isEmpty) {
             return Center(
-              child: Text("No Posts"),
+              child: Text("No Posts in Section 1"),
             );
           }
           return ListView.builder(
-            itemCount: allPosts.length,
+            itemCount: filteredPosts.length,
             itemBuilder: (context, index) {
-              final post = state.posts[index];
+              final post = filteredPosts[index];
               return PostTile(
                 post: post,
                 onDeletePressed: () => deletePost(post.id),

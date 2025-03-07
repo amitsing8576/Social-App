@@ -60,67 +60,69 @@ class _LoginPageState extends State<LoginPage> {
             child: Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 25.0),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(
-            Icons.lock_open_rounded,
-            size: 100,
-            color: Colors.black54,
-          ),
-          const SizedBox(height: 50),
-          Text(
-            "Login Page",
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
+        child: SingleChildScrollView(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(
+              Icons.lock_open_rounded,
+              size: 100,
               color: Colors.black54,
             ),
-          ),
-          const SizedBox(height: 25),
-          MyTextField(
-              controller: emailcontroller,
-              hintText: "Email",
-              obscureText: false),
-          const SizedBox(height: 20),
-          MyTextField(
-              controller: passwordcontroller,
-              hintText: "Password",
-              obscureText: true),
-          const SizedBox(height: 20),
-          MyButton(
-            text: "Login",
-            onTap: () {
-              Login();
-            },
-          ),
-
-          const SizedBox(height: 50),
-
-          // navigate to the register page
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Don't have an account? ",
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontSize: 15,
-                ),
+            const SizedBox(height: 50),
+            Text(
+              "Login Page",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
               ),
-              GestureDetector(
-                onTap: widget.togglePages,
-                child: Text(
-                  " Register",
+            ),
+            const SizedBox(height: 25),
+            MyTextField(
+                controller: emailcontroller,
+                hintText: "Email",
+                obscureText: false),
+            const SizedBox(height: 20),
+            MyTextField(
+                controller: passwordcontroller,
+                hintText: "Password",
+                obscureText: true),
+            const SizedBox(height: 20),
+            MyButton(
+              text: "Login",
+              onTap: () {
+                Login();
+              },
+            ),
+
+            const SizedBox(height: 50),
+
+            // navigate to the register page
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Don't have an account? ",
                   style: TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
                     fontSize: 15,
                   ),
                 ),
-              ),
-            ],
-          ),
-        ]),
+                GestureDetector(
+                  onTap: widget.togglePages,
+                  child: Text(
+                    " Register",
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ]),
+        ),
       ),
     )));
   }
