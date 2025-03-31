@@ -6,6 +6,7 @@ import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/post/domain/entities/comment.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
+import 'package:socialapp/widgets/textToSpeech.dart';
 
 class PostTile4 extends StatefulWidget {
   final Post post;
@@ -25,6 +26,7 @@ class _PostTile4State extends State<PostTile4> {
   bool isOwnPost = false;
   bool showComments = false; // Toggle comments section
   AppUser? currentUser;
+  bool isTtsPlaying = false;
 
   final CommentTextController = TextEditingController();
 
@@ -152,7 +154,7 @@ class _PostTile4State extends State<PostTile4> {
               ),
               const SizedBox(width: 10),
               Text(
-                "Anonymous User",
+                widget.post.anonymous ? "Anonymous" : widget.post.userName,
                 style: TextStyle(fontWeight: FontWeight.bold),
                 //overflow: TextOverflow.ellipsis,
               ),
@@ -183,6 +185,21 @@ class _PostTile4State extends State<PostTile4> {
               //overflow: TextOverflow.ellipsis,
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(left: 0, right: 10.0),
+            child: ClipRRect(
+              borderRadius:
+                  BorderRadius.circular(20), // Adjust the radius as needed
+              child: widget.post.imageUrl == null
+                  ? Container()
+                  : Image.asset(
+                      '${widget.post.imageUrl}',
+                      width: double.infinity,
+                      height: 400,
+                      fit: BoxFit.cover,
+                    ),
+            ),
+          ),
           const SizedBox(height: 10),
 
           // Post Actions (Like, Comment, Save)
@@ -207,9 +224,6 @@ class _PostTile4State extends State<PostTile4> {
               GestureDetector(
                 onTap: () {
                   setState(() => showComments = !showComments);
-                  if (showComments) {
-                    openNewCommentBox();
-                  }
                 },
                 child: Icon(Icons.comment_outlined, size: 18),
               ),
@@ -228,7 +242,14 @@ class _PostTile4State extends State<PostTile4> {
               Text(widget.post.saves.length.toString(),
                   style: TextStyle(color: Colors.grey[500])),
               const Spacer(),
-              Icon(Icons.play_circle_outline_sharp, size: 18),
+              TTSPage(
+                text: widget.post.text,
+                onPlayStateChanged: (isPlaying) {
+                  setState(() {
+                    isTtsPlaying = isPlaying;
+                  });
+                },
+              ),
               const SizedBox(width: 12),
             ],
           ),
@@ -247,6 +268,16 @@ class _PostTile4State extends State<PostTile4> {
                     Text(
                       "Replies",
                       style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: openNewCommentBox,
+                      icon: Icon(Icons.add_comment_outlined),
+                      iconSize: 25,
+                      color: Colors.black,
+                    ),
+                    SizedBox(
+                      width: 1,
                     ),
                   ],
                 ),
@@ -281,10 +312,22 @@ class _PostTile4State extends State<PostTile4> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Anonymous User',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        ' Anonymous User',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        customTimeAgo(
+                                            widget.post.comments[i].timeStamp),
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   Text(
                                     widget.post.comments[i].text,
@@ -310,9 +353,13 @@ class _PostTile4State extends State<PostTile4> {
                                           style: TextStyle(
                                               color: Colors.grey[500])),
                                       const Spacer(),
-                                      Icon(
-                                        Icons.play_circle_outline_sharp,
-                                        size: 18,
+                                      TTSPage(
+                                        text: widget.post.comments[i].text,
+                                        onPlayStateChanged: (isPlaying) {
+                                          setState(() {
+                                            isTtsPlaying = isPlaying;
+                                          });
+                                        },
                                       ),
                                     ],
                                   ),
@@ -320,12 +367,7 @@ class _PostTile4State extends State<PostTile4> {
                                 ],
                               ),
                             ),
-                            Text(
-                              customTimeAgo(widget.post.comments[i].timeStamp),
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
-                            )
+                            const SizedBox(width: 1),
                           ],
                         ),
                       ),

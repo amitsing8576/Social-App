@@ -1,15 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+
 import 'package:socialapp/features/auth/domain/entities/app_user.dart';
-import 'package:socialapp/features/auth/presentation/components/my_text_field.dart';
+
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_states.dart';
+import 'package:socialapp/features/post/presentation/pages/file_picker.dart';
 
 class UploadPostPages extends StatefulWidget {
   const UploadPostPages({super.key});
@@ -21,10 +19,10 @@ class UploadPostPages extends StatefulWidget {
 class _UploadPostPagesState extends State<UploadPostPages> {
   final textController = TextEditingController();
   final captionController = TextEditingController();
-  final List<String> _sections = ['Section 1', 'Section 2', 'Section 3'];
-  late String _selectedSection = _sections[0];
-  XFile? _selectedImage;
-  final ImagePicker _picker = ImagePicker();
+
+  String? _selectedCategory = 'Section 1';
+  String? _selectedImage;
+  bool _postAnonymously = false;
 
   AppUser? currentUser;
 
@@ -34,21 +32,34 @@ class _UploadPostPagesState extends State<UploadPostPages> {
     getCurrentUser();
   }
 
+  final List<String> assetImages = [
+    'assets/img.png',
+    'assets/dog.jpeg',
+    'assets/fish.jpeg',
+    'assets/food.jpeg',
+    'assets/panda.jpg',
+    'assets/butterfly.jpeg',
+    'assets/scene1.jpg',
+    'assets/scene2.jpeg',
+    'assets/IIT Guwahati.jpg',
+  ];
+
   Future<void> _pickImage() async {
-    // Request permission before accessing the gallery
-    if (await Permission.photos.request().isGranted ||
-        await Permission.storage.request().isGranted) {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        setState(() {
-          _selectedImage = image;
-        });
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gallery permission is required!')),
-      );
-    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to take more space
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => ImagePickerBottomSheet(
+        assetImages: assetImages,
+        onImageSelected: (imagePath) {
+          setState(() {
+            _selectedImage = imagePath;
+          });
+        },
+      ),
+    );
   }
 
   void getCurrentUser() async {
@@ -78,11 +89,13 @@ class _UploadPostPagesState extends State<UploadPostPages> {
       userName: currentUser!.name,
       text: textController.text,
       caption: captionController.text,
-      section: _selectedSection,
+      section: _selectedCategory!,
       timeStamp: DateTime.now(),
       likes: [],
       saves: [],
       comments: [],
+      imageUrl: _selectedImage,
+      anonymous: _postAnonymously,
     );
 
     final postCubit = context.read<PostCubit>();
@@ -121,19 +134,21 @@ class _UploadPostPagesState extends State<UploadPostPages> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.grey,
+        //backgroundColor: Colors.grey,
         title: const Text(
-          'Create Post',
+          'New Post',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: IconButton(
               onPressed: uploadPost,
-              icon: const Icon(Icons.cloud_upload, size: 28),
+              icon: const Icon(Icons.check_box_outlined, size: 28),
               tooltip: 'Upload Post',
             ),
           )
@@ -147,143 +162,211 @@ class _UploadPostPagesState extends State<UploadPostPages> {
             children: [
               // Photo Selection Area
               Center(
-                child: Column(
-                  children: [
-                    if (_selectedImage != null)
-                      Container(
-                        width: 200,
-                        height: 200,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
-                          image: DecorationImage(
-                            image: FileImage(File(_selectedImage!.path)),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ElevatedButton.icon(
-                      onPressed: _pickImage,
-                      icon: const Icon(Icons.add_photo_alternate_outlined),
-                      label: Text(
-                        _selectedImage == null ? 'Add Photo' : 'Change Photo',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 0,
-                      ),
+                child: Text(
+                  'Choose a category you want to post in ',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildCategoryCard(
+                    'Share/Learn\nSkills',
+                    'Section 1',
+                    Icons.computer_outlined,
+                  ),
+                  _buildCategoryCard(
+                    'Problem\nDiscussions',
+                    'Section 2',
+                    Icons.chat_bubble_outline,
+                  ),
+                  _buildCategoryCard(
+                    'Workplace\nExperience',
+                    'Section 3',
+                    Icons.people_outline,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Text(
+                    'Do you wish to post anonymously?',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Choose Section',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.grey.shade300,
                   ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                width: double.infinity,
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedSection,
-                    isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down_circle_outlined),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedSection = newValue!;
-                      });
-                    },
-                    items: _sections.map((location) {
-                      return DropdownMenuItem(
-                        value: location,
-                        child: Text(
-                          location,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
+                  const Spacer(),
+                  _buildChoiceButton('Yes', true),
+                  const SizedBox(width: 8),
+                  _buildChoiceButton('No', false),
+                ],
               ),
-              const SizedBox(height: 24),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
+
+              const SizedBox(height: 16),
+
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  width: double.infinity,
+                  height: 150,
+                  decoration: BoxDecoration(
                     color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(16),
+                    image: _selectedImage != null
+                        ? DecorationImage(
+                            image: AssetImage(_selectedImage!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
+                  child: _selectedImage == null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.cloud_upload_outlined,
+                                color: Colors.grey.shade500,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Upload image/video here',
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: captionController,
+                  decoration: const InputDecoration(
+                    hintText: 'Write title here...',
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(color: Colors.grey),
+                  ),
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Content Field
+              Container(
+                height: 150,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: captionController,
-                      decoration: const InputDecoration(
-                        hintText: "Write a caption...",
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                      maxLines: 3,
-                    ),
-                    const Divider(height: 32),
-                    TextField(
-                      controller: textController,
-                      decoration: const InputDecoration(
-                        hintText: "Write your post content here...",
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                      style: const TextStyle(fontSize: 16),
-                      maxLines: 8,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: uploadPost,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
+                child: TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(
+                    hintText: 'Write content here...',
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(color: Colors.grey),
                   ),
-                  child: const Text(
-                    'Upload Post',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
+                  style: const TextStyle(fontSize: 16),
+                  maxLines: 15,
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(String title, String section, IconData icon) {
+    final isSelected = _selectedCategory == section;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategory = section;
+        });
+      },
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? Colors.blue.shade300 : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 60,
+              width: 60,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black, width: 2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 30,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChoiceButton(String label, bool value) {
+    final isSelected = _postAnonymously == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _postAnonymously = value;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.grey.shade800 : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade400),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),

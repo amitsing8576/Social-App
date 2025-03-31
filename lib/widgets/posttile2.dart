@@ -6,6 +6,7 @@ import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/post/domain/entities/comment.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
+import 'package:socialapp/widgets/textToSpeech.dart';
 
 class PostTile2 extends StatefulWidget {
   final Post post;
@@ -19,6 +20,7 @@ class PostTile2 extends StatefulWidget {
 class _PostTileState extends State<PostTile2> {
   bool isOwnPost = false;
   AppUser? currentUser;
+  bool isTtsPlaying = false;
 
   void togglesavePost() {
     final issaved = widget.post.saves.contains(currentUser!.uid);
@@ -77,10 +79,18 @@ class _PostTileState extends State<PostTile2> {
             child: ClipRRect(
               borderRadius: BorderRadius.vertical(
                   top: Radius.circular(15), bottom: Radius.circular(15)),
-              child: Image.asset(
-                'assets/img.png', // Replace with your asset image path
-                fit: BoxFit.fitHeight,
-              ),
+              child: widget.post.imageUrl == null
+                  ? Container(
+                      child: Text(
+                      "No Image Available",
+                      textAlign: TextAlign.center,
+                    ))
+                  : Image.asset(
+                      '${widget.post.imageUrl}',
+                      width: double.infinity,
+                      height: 400,
+                      fit: BoxFit.cover,
+                    ),
             ),
           ),
           Expanded(
@@ -115,7 +125,14 @@ class _PostTileState extends State<PostTile2> {
                       SizedBox(width: 4),
                       //Text(widget.post.saves.length.toString()),
                       SizedBox(width: 4),
-                      Icon(Icons.play_circle_outline_sharp),
+                      TTSPage(
+                        text: widget.post.text,
+                        onPlayStateChanged: (isPlaying) {
+                          setState(() {
+                            isTtsPlaying = isPlaying;
+                          });
+                        },
+                      ),
                     ],
                   ),
                 ],

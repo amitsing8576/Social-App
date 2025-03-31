@@ -1,19 +1,24 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:socialapp/features/post/domain/entities/comment.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/domain/repos/post_repos.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_states.dart';
+import 'package:socialapp/features/notification/domain/entities/notification.dart';
+import 'package:socialapp/features/notification/presentation/cubits/notification_cubits.dart';
 
 class PostCubit extends Cubit<PostState> {
   final PostRepo postRepo;
-  PostCubit({required this.postRepo}) : super(PostInitial());
+  final NotificationCubit notificationCubit;
+
+  PostCubit({required this.postRepo, required this.notificationCubit})
+      : super(PostInitial());
 
   Future<void> createPost(Post post) async {
     try {
       postRepo.createPost(post);
-
       FetchAllPosts();
     } catch (e) {
       emit(PostError("Error creating post $e"));
@@ -39,9 +44,68 @@ class PostCubit extends Cubit<PostState> {
     }
   }
 
+  Future<Map<String, dynamic>?> getPostById(String postId) async {
+    try {
+      DocumentSnapshot postSnapshot = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .get();
+
+      if (postSnapshot.exists) {
+        return postSnapshot.data() as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching post: $e');
+      return null;
+    }
+  }
+
   Future<void> toggleLikePost(String postId, String userId) async {
     try {
+      // Get post details to know the post owner
+      final posts = state is PostLoaded
+          ? (state as PostLoaded).posts
+          : await postRepo.fetchAllPost();
+      final post = posts.firstWhere((post) => post.id == postId);
+
+      // Check if the user is liking or unliking
+      final isLiking = !post.likes.contains(userId);
+
       await postRepo.togglelikePost(postId, userId);
+
+      // Only create notification if the user is liking (not unliking)
+      // And don't notify if user likes their own post
+      if (isLiking && post.userid != userId) {
+        final currentUser = posts.firstWhere((post) => post.userid == userId,
+            orElse: () => Post(
+                  id: '',
+                  userid: userId,
+                  userName: 'User',
+                  text: '',
+                  caption: '',
+                  section: '',
+                  timeStamp: DateTime.now(),
+                  likes: [],
+                  saves: [],
+                  comments: [],
+                  imageUrl: null,
+                  anonymous: false,
+                ));
+
+        final notification = Notification(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: post.userid, // Post owner will receive notification
+          triggerUserId: userId, // User who liked the post
+          triggerUserName: post.anonymous ? 'Someone' : currentUser.userName,
+          postId: postId,
+          type: NotificationType.like,
+          timeStamp: DateTime.now(),
+          isRead: false,
+        );
+
+        await notificationCubit.createNotification(notification);
+      }
     } catch (e) {
       emit(PostError("Error toggling like post $e"));
     }
@@ -49,7 +113,49 @@ class PostCubit extends Cubit<PostState> {
 
   Future<void> toggleSavePost(String postId, String userId) async {
     try {
+      // Get post details to know the post owner
+      final posts = state is PostLoaded
+          ? (state as PostLoaded).posts
+          : await postRepo.fetchAllPost();
+      final post = posts.firstWhere((post) => post.id == postId);
+
+      // Check if the user is saving or unsaving
+      final isSaving = !post.saves.contains(userId);
+
       await postRepo.togglesavePost(postId, userId);
+
+      // Only create notification if the user is saving (not unsaving)
+      // And don't notify if user saves their own post
+      if (isSaving && post.userid != userId) {
+        final currentUser = posts.firstWhere((post) => post.userid == userId,
+            orElse: () => Post(
+                  id: '',
+                  userid: userId,
+                  userName: 'User',
+                  text: '',
+                  caption: '',
+                  section: '',
+                  timeStamp: DateTime.now(),
+                  likes: [],
+                  saves: [],
+                  comments: [],
+                  imageUrl: null,
+                  anonymous: false,
+                ));
+
+        final notification = Notification(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: post.userid, // Post owner will receive notification
+          triggerUserId: userId, // User who saved the post
+          triggerUserName: post.anonymous ? 'Someone' : currentUser.userName,
+          postId: postId,
+          type: NotificationType.save,
+          timeStamp: DateTime.now(),
+          isRead: false,
+        );
+
+        await notificationCubit.createNotification(notification);
+      }
     } catch (e) {
       emit(PostError("Error toggling save post $e"));
     }
@@ -57,7 +163,30 @@ class PostCubit extends Cubit<PostState> {
 
   Future<void> addComment(String postId, Comment comment) async {
     try {
+      // Get post details
+      final posts = state is PostLoaded
+          ? (state as PostLoaded).posts
+          : await postRepo.fetchAllPost();
+      final post = posts.firstWhere((post) => post.id == postId);
+
       await postRepo.addComment(postId, comment);
+
+      // Don't notify if user comments on their own post
+      if (post.userid != comment.userId) {
+        final notification = Notification(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: post.userid, // Post owner will receive notification
+          triggerUserId: comment.userId, // User who commented
+          triggerUserName: post.anonymous ? 'Someone' : comment.userName,
+          postId: postId,
+          type: NotificationType.comment,
+          timeStamp: DateTime.now(),
+          isRead: false,
+          text: comment.text, // Include the comment text in the notification
+        );
+
+        await notificationCubit.createNotification(notification);
+      }
 
       FetchAllPosts();
     } catch (e) {
@@ -68,7 +197,6 @@ class PostCubit extends Cubit<PostState> {
   Future<void> deleteComment(String postId, String commentId) async {
     try {
       await postRepo.deleteComment(postId, commentId);
-
       FetchAllPosts();
     } catch (e) {
       emit(PostError("Error deleting comment $e"));

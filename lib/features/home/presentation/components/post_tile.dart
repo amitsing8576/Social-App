@@ -6,6 +6,7 @@ import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/post/domain/entities/comment.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
+import 'package:socialapp/widgets/textToSpeech.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostTile extends StatefulWidget {
@@ -23,6 +24,8 @@ class _PostTileState extends State<PostTile> {
   AppUser? currentUser;
   bool isExpanded = false;
   bool showComments = false;
+  bool isTtsPlaying = false;
+
   void toggleLikePost() {
     final isLiked = widget.post.likes.contains(currentUser!.uid);
 
@@ -180,7 +183,9 @@ class _PostTileState extends State<PostTile> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.post.userName,
+                          widget.post.anonymous
+                              ? "Anonymous"
+                              : widget.post.userName,
                           style: TextStyle(fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -243,12 +248,14 @@ class _PostTileState extends State<PostTile> {
           child: ClipRRect(
             borderRadius:
                 BorderRadius.circular(20), // Adjust the radius as needed
-            child: Image.asset(
-              'assets/img.png',
-              width: double.infinity,
-              height: 400,
-              fit: BoxFit.cover,
-            ),
+            child: widget.post.imageUrl == null
+                ? Container()
+                : Image.asset(
+                    '${widget.post.imageUrl}',
+                    width: double.infinity,
+                    height: 400,
+                    fit: BoxFit.cover,
+                  ),
           ),
         ),
         const SizedBox(
@@ -278,9 +285,6 @@ class _PostTileState extends State<PostTile> {
             GestureDetector(
               onTap: () {
                 setState(() => showComments = !showComments);
-                if (showComments) {
-                  openNewCommentBox();
-                }
               },
               child: Icon(Icons.comment_outlined, size: 18),
             ),
@@ -298,7 +302,14 @@ class _PostTileState extends State<PostTile> {
                 style: TextStyle(color: Colors.grey[500])),
 
             const Spacer(),
-            Icon(Icons.play_circle_outline_sharp),
+            TTSPage(
+              text: widget.post.text,
+              onPlayStateChanged: (isPlaying) {
+                setState(() {
+                  isTtsPlaying = isPlaying;
+                });
+              },
+            ),
             const SizedBox(
               width: 12,
             ),
@@ -317,6 +328,16 @@ class _PostTileState extends State<PostTile> {
                   Text(
                     "Replies",
                     style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: openNewCommentBox,
+                    icon: Icon(Icons.add_comment_outlined),
+                    iconSize: 25,
+                    color: Colors.black,
+                  ),
+                  SizedBox(
+                    width: 1,
                   ),
                 ],
               ),
@@ -350,9 +371,22 @@ class _PostTileState extends State<PostTile> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  widget.post.comments[i].userName,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                Row(
+                                  children: [
+                                    Text(
+                                      widget.post.comments[i].userName,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      customTimeAgo(
+                                          widget.post.comments[i].timeStamp),
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Text(
                                   widget.post.comments[i].text,
@@ -378,9 +412,13 @@ class _PostTileState extends State<PostTile> {
                                         style:
                                             TextStyle(color: Colors.grey[500])),
                                     const Spacer(),
-                                    Icon(
-                                      Icons.play_circle_outline_sharp,
-                                      size: 18,
+                                    TTSPage(
+                                      text: widget.post.comments[i].text,
+                                      onPlayStateChanged: (isPlaying) {
+                                        setState(() {
+                                          isTtsPlaying = isPlaying;
+                                        });
+                                      },
                                     ),
                                   ],
                                 ),
@@ -388,12 +426,7 @@ class _PostTileState extends State<PostTile> {
                               ],
                             ),
                           ),
-                          Text(
-                            customTimeAgo(widget.post.comments[i].timeStamp),
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
-                          )
+                          const SizedBox(width: 10),
                         ],
                       ),
                     ),

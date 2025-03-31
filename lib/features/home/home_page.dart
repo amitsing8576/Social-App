@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:socialapp/drawer/drawerScreen.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/home/presentation/components/post_tile.dart';
+import 'package:socialapp/features/notification/presentation/screens/notification_screen.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_states.dart';
 import 'package:socialapp/features/post/presentation/pages/upload_post_pages.dart';
+
 import 'package:socialapp/screens/screens2.dart';
 import 'package:socialapp/screens/screens3.dart';
 import 'package:socialapp/screens/screens4.dart';
@@ -40,13 +43,23 @@ class _HomePageState extends State<HomePage>
     Container(), // Placeholder for TabBarView
     Screens2(),
     Screens3(),
-    Screens4(),
+    WorkerAssistancePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Drawerscreen(),
+                ),
+              );
+            },
+            icon: Icon(Icons.menu)),
         title: Text('kaari घर', style: TextStyle(fontWeight: FontWeight.w500)),
         actions: [
           IconButton(
@@ -60,10 +73,17 @@ class _HomePageState extends State<HomePage>
             iconSize: 30,
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationScreen(),
+                ),
+              );
+            },
             icon: Icon(Icons.notifications_none),
             iconSize: 30,
-          )
+          ),
         ],
         bottom: _currentIndex == 0
             ? TabBar(
@@ -117,25 +137,6 @@ class _HomePageState extends State<HomePage>
                 ),
               )
             : null,
-      ),
-      drawer: Drawer(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(height: 150),
-            IconButton(
-              onPressed: () {
-                context.read<AuthCubit>().logout();
-              },
-              icon: Icon(Icons.logout),
-              iconSize: 80,
-            ),
-            Text(
-              "Logout",
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-            )
-          ],
-        ),
       ),
       body: _currentIndex == 0
           ? TabBarView(

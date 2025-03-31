@@ -5,13 +5,17 @@ import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_states.dart';
 import 'package:socialapp/features/auth/presentation/pages/auth_page.dart';
 import 'package:socialapp/features/home/home_page.dart';
+import 'package:socialapp/features/notification/data/firebase_notification_repo.dart';
+import 'package:socialapp/features/notification/presentation/cubits/notification_cubits.dart';
 import 'package:socialapp/features/post/data/firebase_post_repo.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   final authrepo = FirebaseAuthRepo();
-
   final firebasePostRepo = FirebasePostRepo();
+  final firebaseNotificationRepo = FirebaseNotificationRepo();
 
   MyApp({super.key});
 
@@ -23,31 +27,34 @@ class MyApp extends StatelessWidget {
           create: (context) =>
               AuthCubit(authrepo, authRepo: authrepo)..checkAuth(),
         ),
+        BlocProvider<NotificationCubit>(
+          create: (context) => NotificationCubit(
+            notificationRepo: firebaseNotificationRepo,
+          ),
+        ),
         BlocProvider<PostCubit>(
-          create: (context) => PostCubit(postRepo: firebasePostRepo),
+          create: (context) => PostCubit(
+            postRepo: firebasePostRepo,
+            notificationCubit: context.read<NotificationCubit>(),
+          ),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         home: BlocConsumer<AuthCubit, AuthState>(
           builder: (context, authState) {
-            //if user is unauthenticated show auth page
             if (authState is unAuthenticated) {
               return AuthPage();
             }
-
-            //if user is authenticated show home page
             if (authState is Authenticated) {
               return HomePage();
             }
-            // if user is loading show loading page
-            else {
-              return Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
           },
           listener: (context, state) {
             if (state is AuthError) {

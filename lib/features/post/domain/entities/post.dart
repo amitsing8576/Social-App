@@ -13,6 +13,8 @@ class Post {
   final List<String> likes;
   final List<String> saves;
   final List<Comment> comments;
+  final String? imageUrl;
+  final bool anonymous;
 
   Post({
     required this.id,
@@ -25,6 +27,8 @@ class Post {
     required this.likes,
     required this.saves,
     required this.comments,
+    required this.imageUrl,
+    required this.anonymous,
   });
 
   //convert post to json
@@ -41,6 +45,8 @@ class Post {
       'likes': likes,
       'saves': saves,
       'comments': comments.map((comment) => comment.toJson()),
+      'imageUrl': imageUrl,
+      'anonymous': anonymous,
     };
   }
 
@@ -62,6 +68,8 @@ class Post {
       likes: List<String>.from(json['likes'] ?? []),
       saves: List<String>.from(json['saves'] ?? []),
       comments: comments,
+      imageUrl: json['imageUrl'],
+      anonymous: json['anonymous'],
     );
   }
 }
