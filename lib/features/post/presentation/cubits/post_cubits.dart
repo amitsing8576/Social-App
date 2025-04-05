@@ -92,19 +92,6 @@ class PostCubit extends Cubit<PostState> {
                   imageUrl: null,
                   anonymous: false,
                 ));
-
-        final notification = Notification(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: post.userid, // Post owner will receive notification
-          triggerUserId: userId, // User who liked the post
-          triggerUserName: post.anonymous ? 'Someone' : currentUser.userName,
-          postId: postId,
-          type: NotificationType.like,
-          timeStamp: DateTime.now(),
-          isRead: false,
-        );
-
-        await notificationCubit.createNotification(notification);
       }
     } catch (e) {
       emit(PostError("Error toggling like post $e"));
@@ -142,19 +129,6 @@ class PostCubit extends Cubit<PostState> {
                   imageUrl: null,
                   anonymous: false,
                 ));
-
-        final notification = Notification(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: post.userid, // Post owner will receive notification
-          triggerUserId: userId, // User who saved the post
-          triggerUserName: post.anonymous ? 'Someone' : currentUser.userName,
-          postId: postId,
-          type: NotificationType.save,
-          timeStamp: DateTime.now(),
-          isRead: false,
-        );
-
-        await notificationCubit.createNotification(notification);
       }
     } catch (e) {
       emit(PostError("Error toggling save post $e"));
@@ -170,23 +144,6 @@ class PostCubit extends Cubit<PostState> {
       final post = posts.firstWhere((post) => post.id == postId);
 
       await postRepo.addComment(postId, comment);
-
-      // Don't notify if user comments on their own post
-      if (post.userid != comment.userId) {
-        final notification = Notification(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: post.userid, // Post owner will receive notification
-          triggerUserId: comment.userId, // User who commented
-          triggerUserName: post.anonymous ? 'Someone' : comment.userName,
-          postId: postId,
-          type: NotificationType.comment,
-          timeStamp: DateTime.now(),
-          isRead: false,
-          text: comment.text, // Include the comment text in the notification
-        );
-
-        await notificationCubit.createNotification(notification);
-      }
 
       FetchAllPosts();
     } catch (e) {

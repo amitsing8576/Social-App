@@ -9,7 +9,7 @@ class FirebaseNotificationRepo implements NotificationRepo {
       FirebaseFirestore.instance.collection('notifications');
 
   @override
-  Future<void> createNotification(Notification notification) async {
+  Future<void> createNotification(Notificationn notification) async {
     try {
       await notificationsCollection
           .doc(notification.id)
@@ -20,16 +20,16 @@ class FirebaseNotificationRepo implements NotificationRepo {
   }
 
   @override
-  Future<List<Notification>> fetchNotificationsForUser(String userId) async {
+  Future<List<Notificationn>> fetchNotificationsForUser(String userId) async {
     try {
       final notificationsSnapshot = await notificationsCollection
           .where('userId', isEqualTo: userId)
           .orderBy('timeStamp', descending: true)
           .get();
 
-      final List<Notification> notifications = notificationsSnapshot.docs
+      final List<Notificationn> notifications = notificationsSnapshot.docs
           .map((doc) =>
-              Notification.fromJson(doc.data() as Map<String, dynamic>))
+              Notificationn.fromJson(doc.data() as Map<String, dynamic>))
           .toList();
 
       return notifications;

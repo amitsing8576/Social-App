@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:socialapp/drawer/drawerScreen.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/home/presentation/components/post_tile.dart';
+import 'package:socialapp/features/notification/presentation/components/notification_badge.dart';
 import 'package:socialapp/features/notification/presentation/screens/notification_screen.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
@@ -72,7 +73,7 @@ class _HomePageState extends State<HomePage>
             icon: Icon(Icons.add),
             iconSize: 30,
           ),
-          IconButton(
+          /* IconButton(
             onPressed: () {
               Navigator.push(
                 context,
@@ -83,7 +84,23 @@ class _HomePageState extends State<HomePage>
             },
             icon: Icon(Icons.notifications_none),
             iconSize: 30,
-          ),
+          ),*/
+          GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificationScreen(),
+                  ),
+                );
+              },
+              child: NotificationBadge(
+                child: Icon(
+                  Icons.notifications_none,
+                  size: 30,
+                ),
+              )),
+          const SizedBox(width: 10),
         ],
         bottom: _currentIndex == 0
             ? TabBar(

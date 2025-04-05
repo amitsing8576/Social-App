@@ -17,7 +17,7 @@ class NotificationList extends StatelessWidget {
           final notifications = state.notifications;
 
           // Group notifications by time section
-          final Map<String, List<custom.Notification>> groupedNotifications =
+          final Map<String, List<custom.Notificationn>> groupedNotifications =
               {};
 
           for (var notification in notifications) {

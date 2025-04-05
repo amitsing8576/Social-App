@@ -8,7 +8,7 @@ import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
 import 'package:socialapp/widgets/textToSpeech.dart';
 
 class NotificationTile extends StatefulWidget {
-  final custom.Notification notification;
+  final custom.Notificationn notification;
   final bool showHeader;
 
   const NotificationTile({
@@ -26,11 +26,11 @@ class _NotificationTileState extends State<NotificationTile> {
 
   String _getNotificationTitle() {
     switch (widget.notification.type) {
-      case NotificationType.like:
+      case 1:
         return "Your work is getting noticed! ${widget.notification.triggerUserName} liked your post—keep sharing your craft with the community!";
-      case NotificationType.comment:
+      case 3:
         return "Someone left a comment on your post! Tap here to see what they said.";
-      case NotificationType.save:
+      case 2:
         return "Great news! ${widget.notification.triggerUserName} saved your post to revisit later. Your work is inspiring others!";
       default:
         return "New notification";
@@ -39,11 +39,11 @@ class _NotificationTileState extends State<NotificationTile> {
 
   IconData _getNotificationIcon() {
     switch (widget.notification.type) {
-      case NotificationType.like:
+      case 1:
         return Icons.favorite_border;
-      case NotificationType.comment:
+      case 3:
         return Icons.chat_bubble_outline;
-      case NotificationType.save:
+      case 2:
         return Icons.bookmark_border;
       default:
         return Icons.notifications_none;
@@ -73,7 +73,6 @@ class _NotificationTileState extends State<NotificationTile> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             width: double.infinity,
             alignment: Alignment.centerLeft,
-            color: Colors.white,
             child: Text(
               _getTimeSection(widget.notification.timeStamp),
               style: const TextStyle(
@@ -98,7 +97,7 @@ class _NotificationTileState extends State<NotificationTile> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              //color: Colors.white,
               border: Border(
                 bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
               ),

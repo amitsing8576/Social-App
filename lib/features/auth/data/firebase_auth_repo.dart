@@ -87,4 +87,13 @@ class FirebaseAuthRepo implements AuthRepo {
         email: firebaseUser.email!,
         name: userDoc['name']);
   }
+
+  @override
+  Future<void> updateUser(AppUser user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).update(user.toJson());
+    } catch (e) {
+      throw Exception('Update failed $e');
+    }
+  }
 }

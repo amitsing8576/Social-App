@@ -9,7 +9,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   NotificationCubit({required this.notificationRepo})
       : super(NotificationInitial());
 
-  Future<void> createNotification(Notification notification) async {
+  Future<void> createNotification(Notificationn notification) async {
     try {
       await notificationRepo.createNotification(notification);
     } catch (e) {
@@ -38,7 +38,7 @@ class NotificationCubit extends Cubit<NotificationState> {
             currentState.notifications.map((notification) {
           if (notification.id == notificationId) {
             // Create a new notification object with isRead set to true
-            return Notification(
+            return Notificationn(
               id: notification.id,
               userId: notification.userId,
               triggerUserId: notification.triggerUserId,
@@ -68,7 +68,7 @@ class NotificationCubit extends Cubit<NotificationState> {
         final updatedNotifications =
             currentState.notifications.map((notification) {
           // Create a new notification object with isRead set to true
-          return Notification(
+          return Notificationn(
             id: notification.id,
             userId: notification.userId,
             triggerUserId: notification.triggerUserId,

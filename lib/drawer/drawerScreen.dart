@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:share_plus/share_plus.dart'; // Add this import
+import 'package:socialapp/drawer/rule_rituals.dart';
+import 'package:socialapp/drawer/savedContent.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
+import 'package:socialapp/features/auth/presentation/pages/auth_page.dart';
+import 'package:socialapp/features/auth/presentation/pages/login_page.dart';
+import 'package:socialapp/features/profile/profileScreen.dart';
 
 class Drawerscreen extends StatefulWidget {
   const Drawerscreen({super.key});
@@ -10,29 +16,34 @@ class Drawerscreen extends StatefulWidget {
 }
 
 class _DrawerscreenState extends State<Drawerscreen> {
-  // Placeholder pages need to be defined before they're used in menuItems
-  final ProfilePage _profilePage = ProfilePage();
-  final SavedContentPage _savedContentPage = SavedContentPage();
+  final SavedcontentPage _savedContentPage = SavedcontentPage();
   final PodcastPage _podcastPage = PodcastPage();
   final RulesPage _rulesPage = RulesPage();
   final MoodPage _moodPage = MoodPage();
   final PollPage _pollPage = PollPage();
   final AddFriendPage _addFriendPage = AddFriendPage();
-  final SharePage _sharePage = SharePage();
 
-  // List of menu items with their icons and names
   late final List<Map<String, dynamic>> menuItems;
+
+  // Share function
+  void _shareApp() {
+    const String androidUrl =
+        'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
+    const String iosUrl = 'https://apps.apple.com/app/idYOUR_APP_ID';
+    final String message =
+        'Check out Kaari घर!\nAndroid: $androidUrl\niOS: $iosUrl';
+    Share.share(message);
+  }
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize menuItems in initState
     menuItems = [
       {
         'icon': Icons.person_outline,
         'title': 'Edit/View Profile',
-        'page': _profilePage,
+        'page': Profilescreen(),
       },
       {
         'icon': Icons.bookmark_border,
@@ -47,7 +58,7 @@ class _DrawerscreenState extends State<Drawerscreen> {
       {
         'icon': Icons.rule_outlined,
         'title': 'Rules & Rituals',
-        'page': _rulesPage,
+        'page': RuleRituals(),
       },
       {
         'icon': Icons.mood,
@@ -67,7 +78,7 @@ class _DrawerscreenState extends State<Drawerscreen> {
       {
         'icon': Icons.share_outlined,
         'title': 'Share Kaari घर',
-        'page': _sharePage,
+        'page': Container(), // Placeholder since we won't navigate
       },
     ];
   }
@@ -94,7 +105,6 @@ class _DrawerscreenState extends State<Drawerscreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Error: GridView.builder needs to be wrapped in a container with height or Expanded
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -117,6 +127,7 @@ class _DrawerscreenState extends State<Drawerscreen> {
             IconButton(
               onPressed: () {
                 context.read<AuthCubit>().logout();
+                Navigator.pop(context);
               },
               icon: const Icon(Icons.logout),
               iconSize: 30,
@@ -134,10 +145,15 @@ class _DrawerscreenState extends State<Drawerscreen> {
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => page),
-        );
+        // Handle share differently
+        if (title == 'Share Kaari घर') {
+          _shareApp();
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => page),
+          );
+        }
       },
       child: Column(
         children: [
@@ -150,7 +166,6 @@ class _DrawerscreenState extends State<Drawerscreen> {
               child: Center(
                 child: Icon(
                   icon,
-                  // 'weight' property doesn't exist for Icon class, remove it
                   size: 60,
                   color: const Color.fromARGB(221, 32, 32, 32),
                 ),
@@ -172,25 +187,15 @@ class _DrawerscreenState extends State<Drawerscreen> {
   }
 }
 
+// Remove the SharePage class since it's no longer needed
+
+// Keep other placeholder page classes unchanged
+// ...
+
 // Placeholder pages for each menu item
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit/View Profile'),
-      ),
-      body: const Center(
-        child: Text('Profile Page Content'),
-      ),
-    );
-  }
-}
-
-class SavedContentPage extends StatelessWidget {
-  const SavedContentPage({Key? key}) : super(key: key);
+class SavedcontentPage extends StatelessWidget {
+  const SavedcontentPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -198,9 +203,7 @@ class SavedContentPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Saved Content'),
       ),
-      body: const Center(
-        child: Text('Saved Content Page'),
-      ),
+      body: savedContentPage(),
     );
   }
 }
@@ -280,22 +283,6 @@ class AddFriendPage extends StatelessWidget {
       ),
       body: const Center(
         child: Text('Add Friend Page Content'),
-      ),
-    );
-  }
-}
-
-class SharePage extends StatelessWidget {
-  const SharePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Share Kaari घर'),
-      ),
-      body: const Center(
-        child: Text('Share Page Content'),
       ),
     );
   }

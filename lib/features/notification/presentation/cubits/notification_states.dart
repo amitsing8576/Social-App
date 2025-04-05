@@ -13,7 +13,7 @@ class NotificationError extends NotificationState {
 }
 
 class NotificationsLoaded extends NotificationState {
-  final List<Notification> notifications;
+  final List<Notificationn> notifications;
 
   NotificationsLoaded(this.notifications);
 }

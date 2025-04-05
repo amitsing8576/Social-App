@@ -5,6 +5,18 @@ class AppUser {
 
   AppUser({required this.uid, required this.email, required this.name});
 
+  AppUser copyWith({
+    String? uid,
+    String? name,
+    String? email,
+  }) {
+    return AppUser(
+      uid: uid ?? this.uid,
+      name: name ?? this.name,
+      email: email ?? this.email,
+    );
+  }
+
   //convert appuser to json
 
   Map<String, dynamic> toJson() {

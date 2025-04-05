@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:socialapp/features/auth/domain/entities/app_user.dart';
 import 'package:socialapp/features/auth/presentation/components/my_text_field.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
+import 'package:socialapp/features/notification/domain/entities/notification.dart';
+import 'package:socialapp/features/notification/presentation/cubits/notification_cubits.dart';
 import 'package:socialapp/features/post/domain/entities/comment.dart';
 import 'package:socialapp/features/post/domain/entities/post.dart';
 import 'package:socialapp/features/post/presentation/cubits/post_cubits.dart';
@@ -69,64 +71,125 @@ class _PostTile3State extends State<PostTile3> {
       }
     });
 
-    context.read<PostCubit>().toggleLikePost(widget.post.id, currentUser!.uid);
+    context
+        .read<PostCubit>()
+        .toggleLikePost(widget.post.id, currentUser!.uid)
+        .catchError((error) {
+      setState(() {
+        if (isLiked) {
+          widget.post.likes.add(currentUser!.uid);
+        } else {
+          widget.post.likes.remove(currentUser!.uid);
+        }
+      });
+    });
+    final notification = Notificationn(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: widget.post.userid,
+      triggerUserId: currentUser!.uid,
+      triggerUserName: currentUser!.name,
+      postId: widget.post.id,
+      type: 1, // 1 for like, 2 for save, 3 for comment
+      timeStamp: DateTime.now(),
+      isRead: false,
+    );
+    if (isOwnPost == false) {
+      if (isLiked == false) {
+        context.read<NotificationCubit>().createNotification(notification);
+      }
+    }
   }
 
   void togglesavePost() {
-    final isSaved = widget.post.saves.contains(currentUser!.uid);
+    final issaved = widget.post.saves.contains(currentUser!.uid);
 
     setState(() {
-      if (isSaved) {
+      if (issaved) {
         widget.post.saves.remove(currentUser!.uid);
       } else {
         widget.post.saves.add(currentUser!.uid);
       }
     });
 
-    context.read<PostCubit>().toggleSavePost(widget.post.id, currentUser!.uid);
+    context
+        .read<PostCubit>()
+        .toggleSavePost(widget.post.id, currentUser!.uid)
+        .catchError((error) {
+      setState(() {
+        if (issaved) {
+          widget.post.saves.add(currentUser!.uid);
+        } else {
+          widget.post.saves.remove(currentUser!.uid);
+        }
+      });
+    });
+    final notification = Notificationn(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: widget.post.userid,
+      triggerUserId: currentUser!.uid,
+      triggerUserName: currentUser!.name,
+      postId: widget.post.id,
+      type: 2, // 1 for like, 2 for save, 3 for comment
+      timeStamp: DateTime.now(),
+      isRead: false,
+    );
+    if (isOwnPost == false) {
+      if (issaved == false) {
+        context.read<NotificationCubit>().createNotification(notification);
+      }
+    }
   }
 
   void openNewCommentBox() {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: MyTextField(
-          controller: CommentTextController,
-          hintText: 'Add a Comment',
-          obscureText: false,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              addComment();
-              Navigator.pop(context);
-            },
-            child: Text('Post'),
-          ),
-        ],
-      ),
-    );
+        context: context,
+        builder: (context) => AlertDialog(
+                content: MyTextField(
+                  controller: CommentTextController,
+                  hintText: 'Add a Comment',
+                  obscureText: false,
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('Cancel')),
+                  TextButton(
+                      onPressed: () {
+                        addComment();
+                        Navigator.pop(context);
+                      },
+                      child: Text('Post')),
+                ]));
   }
 
   void addComment() {
     final text = CommentTextController.text;
 
-    if (text.isNotEmpty) {
-      final newComment = Comment(
+    final newcomment = Comment(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         postId: widget.post.id,
-        userId: currentUser!.uid,
-        userName: currentUser!.name,
+        userId: widget.post.userid,
+        userName: widget.post.userName,
         text: text,
-        timeStamp: DateTime.now(),
-      );
+        timeStamp: DateTime.now());
 
-      context.read<PostCubit>().addComment(widget.post.id, newComment);
-      CommentTextController.clear();
+    if (CommentTextController.text.isNotEmpty) {
+      context.read<PostCubit>().addComment(widget.post.id, newcomment);
+      final notification = Notificationn(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: widget.post.userid,
+        triggerUserId: currentUser!.uid,
+        triggerUserName: currentUser!.name,
+        postId: widget.post.id,
+        type: 3, // 1 for like, 2 for save, 3 for comment
+        timeStamp: DateTime.now(),
+        isRead: false,
+      );
+      if (isOwnPost == false) {
+        context.read<NotificationCubit>().createNotification(notification);
+      }
     }
   }
 
