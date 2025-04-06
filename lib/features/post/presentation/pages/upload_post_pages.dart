@@ -10,7 +10,8 @@ import 'package:socialapp/features/post/presentation/cubits/post_states.dart';
 import 'package:socialapp/features/post/presentation/pages/file_picker.dart';
 
 class UploadPostPages extends StatefulWidget {
-  const UploadPostPages({super.key});
+  int index;
+  UploadPostPages({super.key, required this.index});
 
   @override
   State<UploadPostPages> createState() => _UploadPostPagesState();
@@ -82,22 +83,53 @@ class _UploadPostPagesState extends State<UploadPostPages> {
       );
       return;
     }
-
-    final newPost = Post(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userid: currentUser!.uid,
-      userName: currentUser!.name,
-      text: textController.text,
-      caption: captionController.text,
-      section: _selectedCategory!,
-      timeStamp: DateTime.now(),
-      likes: [],
-      saves: [],
-      comments: [],
-      imageUrl: _selectedImage,
-      anonymous: _postAnonymously,
-    );
-
+    final newPost;
+    if (widget.index == 1) {
+      newPost = Post(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userid: currentUser!.uid,
+        userName: currentUser!.name,
+        text: textController.text,
+        caption: captionController.text,
+        section: "Section 4",
+        timeStamp: DateTime.now(),
+        likes: [],
+        saves: [],
+        comments: [],
+        imageUrl: _selectedImage,
+        anonymous: false,
+      );
+    } else if (widget.index == 2) {
+      newPost = Post(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userid: currentUser!.uid,
+        userName: currentUser!.name,
+        text: textController.text,
+        caption: captionController.text,
+        section: "Section 5",
+        timeStamp: DateTime.now(),
+        likes: [],
+        saves: [],
+        comments: [],
+        imageUrl: _selectedImage,
+        anonymous: false,
+      );
+    } else {
+      newPost = Post(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userid: currentUser!.uid,
+        userName: currentUser!.name,
+        text: textController.text,
+        caption: captionController.text,
+        section: _selectedCategory!,
+        timeStamp: DateTime.now(),
+        likes: [],
+        saves: [],
+        comments: [],
+        imageUrl: _selectedImage,
+        anonymous: _postAnonymously,
+      );
+    }
     final postCubit = context.read<PostCubit>();
     postCubit.createPost(newPost);
   }
@@ -161,53 +193,54 @@ class _UploadPostPagesState extends State<UploadPostPages> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Photo Selection Area
-              Center(
-                child: Text(
-                  'Choose a category you want to post in ',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildCategoryCard(
-                    'Share/Learn\nSkills',
-                    'Section 1',
-                    Icons.computer_outlined,
-                  ),
-                  _buildCategoryCard(
-                    'Problem\nDiscussions',
-                    'Section 2',
-                    Icons.chat_bubble_outline,
-                  ),
-                  _buildCategoryCard(
-                    'Workplace\nExperience',
-                    'Section 3',
-                    Icons.people_outline,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Text(
-                    'Do you wish to post anonymously?',
+              if (widget.index == 0) ...[
+                Center(
+                  child: Text(
+                    'Choose a category you want to post in ',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const Spacer(),
-                  _buildChoiceButton('Yes', true),
-                  const SizedBox(width: 8),
-                  _buildChoiceButton('No', false),
-                ],
-              ),
-
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildCategoryCard(
+                      'Share/Learn\nSkills',
+                      'Section 1',
+                      Icons.computer_outlined,
+                    ),
+                    _buildCategoryCard(
+                      'Problem\nDiscussions',
+                      'Section 2',
+                      Icons.chat_bubble_outline,
+                    ),
+                    _buildCategoryCard(
+                      'Workplace\nExperience',
+                      'Section 3',
+                      Icons.people_outline,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text(
+                      'Do you wish to post anonymously?',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    _buildChoiceButton('Yes', true),
+                    const SizedBox(width: 8),
+                    _buildChoiceButton('No', false),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
 
               GestureDetector(

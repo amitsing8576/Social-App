@@ -43,7 +43,8 @@ class _Screens3State extends State<Screens3> {
             child: CircularProgressIndicator(),
           );
         } else if (state is PostLoaded) {
-          final allPosts = state.posts;
+          final allPosts =
+              state.posts.where((post) => post.section == 'Section 5').toList();
 
           if (allPosts.isEmpty) {
             return Center(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:socialapp/app.dart';
 import 'package:socialapp/drawer/drawerScreen.dart';
+import 'package:socialapp/features/auth/domain/entities/app_user.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/home/presentation/components/post_tile.dart';
 import 'package:socialapp/features/notification/presentation/components/notification_badge.dart';
@@ -27,11 +29,20 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late TabController _tabController;
+  AppUser? currentUser;
+
+  final CommentTextController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    getCurrentUser();
+  }
+
+  void getCurrentUser() async {
+    final authCubit = context.read<AuthCubit>();
+    currentUser = authCubit.currentUser;
   }
 
   @override
@@ -63,16 +74,21 @@ class _HomePageState extends State<HomePage>
             icon: Icon(Icons.menu)),
         title: Text('kaari घर', style: TextStyle(fontWeight: FontWeight.w500)),
         actions: [
-          IconButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => UploadPostPages(),
+          if (_currentIndex == 0 ||
+              currentUser?.email == GlobalVariables.adminEmail)
+            IconButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UploadPostPages(
+                    index: _currentIndex,
+                  ),
+                ),
               ),
+              icon: Icon(Icons.add),
+              iconSize: 30,
             ),
-            icon: Icon(Icons.add),
-            iconSize: 30,
-          ),
+
           /* IconButton(
             onPressed: () {
               Navigator.push(
@@ -113,7 +129,7 @@ class _HomePageState extends State<HomePage>
                         children: [
                           Icon(Icons
                               .precision_manufacturing), // Sewing Machine Icon
-                          SizedBox(width: 8), // Space between icon and text
+                          SizedBox(width: 10), // Space between icon and text
                           Text('Section 1'),
                         ],
                       ),
@@ -126,7 +142,7 @@ class _HomePageState extends State<HomePage>
                         children: [
                           Icon(Icons
                               .error_outline), // Chat Bubble with Exclamation
-                          SizedBox(width: 8),
+                          SizedBox(width: 10),
                           Text('Section 2'),
                         ],
                       ),
@@ -138,7 +154,7 @@ class _HomePageState extends State<HomePage>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.account_tree), // Network Tree Icon
-                          SizedBox(width: 8),
+                          SizedBox(width: 10),
                           Text('Section 3'),
                         ],
                       ),
@@ -150,7 +166,7 @@ class _HomePageState extends State<HomePage>
                 indicator: BoxDecoration(
                   color: Colors
                       .grey.shade300, // Background highlight for active tab
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               )
             : null,

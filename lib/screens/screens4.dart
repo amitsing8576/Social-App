@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class WorkerAssistancePage extends StatefulWidget {
   const WorkerAssistancePage({Key? key}) : super(key: key);
@@ -163,9 +164,9 @@ class _WorkerAssistancePageState extends State<WorkerAssistancePage> {
                     'Your identity stays private, and no one can take action against you for seeking help.',
                 info: 'Timings: Monday to Saturday, 10:00 AM - 6:00 PM',
                 phoneNumber: '+91-9310209482',
-                trailingWidget: const CircleAvatar(
-                  radius: 16,
-                  child: Icon(Icons.call, color: Colors.black, size: 18),
+                trailingWidget: TTSButton(
+                  text:
+                      'Workers\' Voice Helpdesk - AIDER (Next Cop). Got a concern at workplace? The Workers\' Voice Helpdesk can support you with workplace safety issues, concerns about harassment, abuse, or discrimination, your right to form or join groups, and question about wages and statutory benefits. Your identity stays private, and no one can take action against you for seeking help. Timings: Monday to Saturday, 10:00 AM - 6:00 PM. Call +91-9310209482',
                 ),
                 onTap: () => _makePhoneCall('+91-9310209482'),
                 showPhone: true,
@@ -178,9 +179,9 @@ class _WorkerAssistancePageState extends State<WorkerAssistancePage> {
                 info:
                     'For more queries, press the call button below now to call',
                 phoneNumber: '011-20697824',
-                trailingWidget: const CircleAvatar(
-                  radius: 16,
-                  child: Icon(Icons.call, color: Colors.black, size: 18),
+                trailingWidget: TTSButton(
+                  text:
+                      'Delhi Labour Welfare Board. Need legal help? The Delhi Legal Services Authority (DLSA) provides free legal assistance to workers facing issues related to wages, workplace disputes, harassment, or any other concerns. You can visit their Free Legal Aid Centers at Nimri Colony (Ashok Vihar) and Geeta Colony for in-person support. For more queries, call 011-20697824',
                 ),
                 onTap: () => _makePhoneCall('011-20697824'),
                 showPhone: true,
@@ -191,8 +192,9 @@ class _WorkerAssistancePageState extends State<WorkerAssistancePage> {
                 subtitle:
                     'If you\'re unsure where to direct your query, please write your concern in the box below or use the record option to share it in your voice. Then, press the send button, and our team will review it and get back to you within a week.',
                 note: 'Your voice matters! Don\'t hesitate to reach out!',
-                trailingWidget: const CircleAvatar(
-                  backgroundColor: Colors.white,
+                trailingWidget: TTSButton(
+                  text:
+                      'Need Assistance with Other Concerns? If you\'re unsure where to direct your query, please write your concern in the box below or use the record option to share it in your voice. Then, press the send button, and our team will review it and get back to you within a week. Your voice matters! Don\'t hesitate to reach out!',
                 ),
                 onTap: () {},
               ),
@@ -355,6 +357,66 @@ class _WorkerAssistancePageState extends State<WorkerAssistancePage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class TTSButton extends StatefulWidget {
+  final String text;
+
+  const TTSButton({Key? key, required this.text}) : super(key: key);
+
+  @override
+  _TTSButtonState createState() => _TTSButtonState();
+}
+
+class _TTSButtonState extends State<TTSButton> {
+  final FlutterTts flutterTts = FlutterTts();
+  bool isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTts();
+    _setupCompletionListener();
+  }
+
+  Future<void> _initializeTts() async {
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setPitch(1.0);
+    await flutterTts.setSpeechRate(0.5);
+  }
+
+  void _setupCompletionListener() {
+    flutterTts.setCompletionHandler(() {
+      setState(() {
+        isPlaying = false;
+      });
+    });
+  }
+
+  Future<void> _speak() async {
+    if (widget.text.isNotEmpty) {
+      await flutterTts.speak(widget.text);
+    }
+  }
+
+  Future<void> _stop() async {
+    await flutterTts.stop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        setState(() {
+          isPlaying = !isPlaying;
+        });
+        isPlaying ? _speak() : _stop();
+      },
+      icon: Icon(isPlaying
+          ? Icons.pause_circle_outline
+          : Icons.play_circle_outline_sharp),
     );
   }
 }

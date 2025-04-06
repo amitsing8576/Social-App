@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:socialapp/app.dart';
 import 'package:socialapp/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:socialapp/features/notification/presentation/components/notification_tile.dart';
 import 'package:socialapp/features/notification/presentation/cubits/notification_cubits.dart';
 import 'package:socialapp/features/notification/presentation/cubits/notification_states.dart';
+import 'package:socialapp/features/notification/presentation/screens/admin_notfication_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
@@ -13,6 +15,7 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  late final currentUsr;
   @override
   void initState() {
     super.initState();
@@ -21,6 +24,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   void _loadNotifications() {
     final currentUser = context.read<AuthCubit>().currentUser;
+    currentUsr = currentUser!.email;
     if (currentUser != null) {
       context
           .read<NotificationCubit>()
@@ -56,6 +60,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
             },
             child: const Text('Mark all as read'),
           ),
+          if (currentUsr == GlobalVariables.adminEmail) ...[
+            IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (context) => AdminNotficationScreen()),
+                  );
+                },
+                icon: Icon(Icons.add_alarm_outlined))
+          ],
         ],
       ),
       body: BlocBuilder<NotificationCubit, NotificationState>(

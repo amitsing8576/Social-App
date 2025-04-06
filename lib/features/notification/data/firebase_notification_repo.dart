@@ -23,7 +23,7 @@ class FirebaseNotificationRepo implements NotificationRepo {
   Future<List<Notificationn>> fetchNotificationsForUser(String userId) async {
     try {
       final notificationsSnapshot = await notificationsCollection
-          .where('userId', isEqualTo: userId)
+          .where('userId', whereIn: [userId, 'all'])
           .orderBy('timeStamp', descending: true)
           .get();
 

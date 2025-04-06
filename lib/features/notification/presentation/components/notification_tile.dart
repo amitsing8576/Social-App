@@ -33,7 +33,7 @@ class _NotificationTileState extends State<NotificationTile> {
       case 2:
         return "Great news! ${widget.notification.triggerUserName} saved your post to revisit later. Your work is inspiring others!";
       default:
-        return "New notification";
+        return "${widget.notification.text}";
     }
   }
 
@@ -46,7 +46,7 @@ class _NotificationTileState extends State<NotificationTile> {
       case 2:
         return Icons.bookmark_border;
       default:
-        return Icons.notifications_none;
+        return Icons.admin_panel_settings_outlined;
     }
   }
 
