@@ -73,17 +73,37 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/img.png
-    - assets/dog.jpeg
-    - assets/fish.jpeg
-    - assets/food.jpeg
-    - assets/panda.jpg
-    - assets/butterfly.jpeg
-    - assets/scene1.jpg
-    - assets/scene2.jpeg
-    - assets/IIT Guwahati.jpg
-    - assets/support_icon.png
-    - assets/icon.jpg
+   - assets/Alam Khan.png
+   - assets/Allauddin Khan.png
+   - assets/Amit Kumar.jpg
+   - assets/Anju Kumari.png
+   - assets/Devendar Kumar.jpg
+   - assets/icon.jpg
+   - assets/img.png
+   - assets/Imran Khan.jpg
+   - assets/Manju Devi.jpg
+   - assets/Muzzaffar Ali.jpg
+   - assets/Naushad Ali.jpg
+   - assets/pic1_1.jpg
+   - assets/pic1_2.jpg
+   - assets/pic1_3.jpg
+   - assets/pic2_1.jpg
+   - assets/Rajkumari.jpg
+   - assets/Section 1 icon.png
+   - assets/Section 2 icon.png
+   - assets/Section 3 icon.png
+   - assets/Shaukhat Ali.png
+   - assets/Soni Kumari.png
+   - assets/support_icon.png
+   - assets/Ubaid Akhtar.jpg
+   - assets/Vineeta Singh.jpg
+   - assets/Wasim Ali.jpg
+   - assets/Context.png
+   - assets/eShram.jpg
+   - assets/How.jpg
+   - assets/Layout.png
+   - assets/Skill India.jpg
+   - assets/What, Why.jpg
   #   - images/a_dot_ham.jpeg
 
 flutter_icons:

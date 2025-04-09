@@ -34,15 +34,16 @@ class _UploadPostPagesState extends State<UploadPostPages> {
   }
 
   final List<String> assetImages = [
-    'assets/img.png',
-    'assets/dog.jpeg',
-    'assets/fish.jpeg',
-    'assets/food.jpeg',
-    'assets/panda.jpg',
-    'assets/butterfly.jpeg',
-    'assets/scene1.jpg',
-    'assets/scene2.jpeg',
-    'assets/IIT Guwahati.jpg',
+    'assets/pic1_1.jpg',
+    'assets/pic1_2.jpg',
+    'assets/pic1_3.jpg',
+    'assets/pic2_1.jpg',
+    'assets/Context.png',
+    'assets/eShram.jpg',
+    'assets/How.jpg',
+    'assets/Layout.png',
+    'assets/Skill India.jpg',
+    'assets/What, Why.jpg'
   ];
 
   Future<void> _pickImage() async {

@@ -65,80 +65,83 @@ class _NotificationTileState extends State<NotificationTile> {
     // Get the PostCubit directly in the build method instead of storing it
     final postCubit = context.read<PostCubit>();
 
-    return Column(
-      children: [
-        // Section header - only show if showHeader is true
-        if (widget.showHeader)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            width: double.infinity,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              _getTimeSection(widget.notification.timeStamp),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        // Divider after header
-        if (widget.showHeader)
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-        // Notification tile
-        InkWell(
-          onTap: () {
-            if (!widget.notification.isRead) {
-              context
-                  .read<NotificationCubit>()
-                  .markNotificationAsRead(widget.notification.id);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              //color: Colors.white,
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
-              ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Icon on the left
-                Container(
-                  margin: const EdgeInsets.only(right: 16),
-                  child: Icon(
-                    _getNotificationIcon(),
-                    color: Colors.black,
-                    size: 24,
-                  ),
+    return Container(
+      color: widget.notification.isRead ? null : Colors.grey[300],
+      child: Column(
+        children: [
+          // Section header - only show if showHeader is true
+          if (widget.showHeader)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              width: double.infinity,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _getTimeSection(widget.notification.timeStamp),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
-                // Notification text
-                Expanded(
-                  child: Text(
-                    _getNotificationTitle(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      height: 1.4,
+              ),
+            ),
+          // Divider after header
+          if (widget.showHeader)
+            const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+          // Notification tile
+          InkWell(
+            onTap: () {
+              if (!widget.notification.isRead) {
+                context
+                    .read<NotificationCubit>()
+                    .markNotificationAsRead(widget.notification.id);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                //color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Icon on the left
+                  Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    child: Icon(
+                      _getNotificationIcon(),
+                      color: Colors.black,
+                      size: 24,
                     ),
                   ),
-                ),
-                // TTS and settings icons
-                TTSPage(
-                  text: _getNotificationTitle(),
-                  onPlayStateChanged: (isPlaying) {
-                    setState(() {
-                      isTtsPlaying = isPlaying;
-                    });
-                  },
-                ),
-              ],
+                  // Notification text
+                  Expanded(
+                    child: Text(
+                      _getNotificationTitle(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  // TTS and settings icons
+                  TTSPage(
+                    text: _getNotificationTitle(),
+                    onPlayStateChanged: (isPlaying) {
+                      setState(() {
+                        isTtsPlaying = isPlaying;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

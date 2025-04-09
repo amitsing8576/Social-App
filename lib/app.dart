@@ -77,5 +77,5 @@ class GlobalVariables {
   GlobalVariables._();
 
   // Static email variable
-  static const String adminEmail = "test2@gmail.com";
+  static const String adminEmail = "testuser2@gmail.com";
 }

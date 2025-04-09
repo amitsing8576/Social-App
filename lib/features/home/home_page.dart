@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage>
               );
             },
             icon: Icon(Icons.menu)),
-        title: Text('kaari घर', style: TextStyle(fontWeight: FontWeight.w500)),
+        title: Text('kaariघर', style: TextStyle(fontWeight: FontWeight.w500)),
         actions: [
           if (_currentIndex == 0 ||
               currentUser?.email == GlobalVariables.adminEmail)
@@ -121,16 +121,16 @@ class _HomePageState extends State<HomePage>
         bottom: _currentIndex == 0
             ? TabBar(
                 controller: _tabController,
-                tabs: const [
+                tabs: [
                   Tab(
                     child: FittedBox(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons
-                              .precision_manufacturing), // Sewing Machine Icon
+                          Image.asset("assets/Section 1 icon.png",
+                              height: 35, width: 35), // Sewing Machine Icon
                           SizedBox(width: 10), // Space between icon and text
-                          Text('Section 1'),
+                          Text('Learn/Share'),
                         ],
                       ),
                     ),
@@ -140,10 +140,11 @@ class _HomePageState extends State<HomePage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons
-                              .error_outline), // Chat Bubble with Exclamation
+                          Image.asset("assets/Section 2 icon.png",
+                              height: 35,
+                              width: 35), // Chat Bubble with Exclamation
                           SizedBox(width: 10),
-                          Text('Section 2'),
+                          Text('Discuss'),
                         ],
                       ),
                     ),
@@ -153,9 +154,10 @@ class _HomePageState extends State<HomePage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.account_tree), // Network Tree Icon
+                          Image.asset("assets/Section 3 icon.png",
+                              height: 35, width: 35), // Network Tree Icon
                           SizedBox(width: 10),
-                          Text('Section 3'),
+                          Text('Experience'),
                         ],
                       ),
                     ),
@@ -163,11 +165,12 @@ class _HomePageState extends State<HomePage>
                 ],
                 labelColor: Colors.black, // Active tab text color
                 unselectedLabelColor: Colors.grey, // Inactive tab text color
-                indicator: BoxDecoration(
+                /*indicator: BoxDecoration(
                   color: Colors
                       .grey.shade300, // Background highlight for active tab
                   borderRadius: BorderRadius.circular(8),
-                ),
+                ),*/
+                indicatorColor: Colors.black,
               )
             : null,
       ),

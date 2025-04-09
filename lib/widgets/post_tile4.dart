@@ -32,6 +32,14 @@ class _PostTile4State extends State<PostTile4> {
 
   final CommentTextController = TextEditingController();
 
+  bool isCommentLiked = false;
+
+  void toggleCommentLike() {
+    setState(() {
+      isCommentLiked = !isCommentLiked;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -170,7 +178,7 @@ class _PostTile4State extends State<PostTile4> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         postId: widget.post.id,
         userId: widget.post.userid,
-        userName: widget.post.userName,
+        userName: currentUser!.name,
         text: text,
         timeStamp: DateTime.now());
 
@@ -212,8 +220,33 @@ class _PostTile4State extends State<PostTile4> {
           Row(
             children: [
               CircleAvatar(
-                radius: 17,
-                backgroundImage: AssetImage('assets/img.png'),
+                child: ClipOval(
+                  child: FadeInImage(
+                    placeholder: AssetImage('assets/img.png'),
+                    image: AssetImage('assets/${widget.post.userName}.png'),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    imageErrorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'assets/${widget.post.userName}.jpg',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/img.png',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                backgroundColor:
+                    Colors.transparent, // Important to see the image properly
               ),
               const SizedBox(width: 10),
               Text(
@@ -357,8 +390,36 @@ class _PostTile4State extends State<PostTile4> {
                             Column(
                               children: [
                                 CircleAvatar(
-                                  radius: 17,
-                                  backgroundImage: AssetImage('assets/img.png'),
+                                  child: ClipOval(
+                                    child: FadeInImage(
+                                      placeholder: AssetImage('assets/img.png'),
+                                      image: AssetImage(
+                                          'assets/${widget.post.comments[i].userName}.png'),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      imageErrorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Image.asset(
+                                          'assets/${widget.post.comments[i].userName}.jpg',
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Image.asset(
+                                              'assets/img.png',
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  backgroundColor: Colors
+                                      .transparent, // Important to see the image properly
                                 ),
                                 if (i < widget.post.comments.length - 1)
                                   Container(
@@ -401,8 +462,17 @@ class _PostTile4State extends State<PostTile4> {
                                   const SizedBox(height: 5),
                                   Row(
                                     children: [
-                                      Icon(Icons.favorite_border, size: 18),
-                                      Text('0',
+                                      GestureDetector(
+                                          onTap: toggleCommentLike,
+                                          child: Icon(
+                                            isCommentLiked
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: isCommentLiked
+                                                ? Colors.red
+                                                : null,
+                                          )),
+                                      Text(isCommentLiked ? '0' : '1',
                                           style: TextStyle(
                                               color: Colors.grey[500])),
                                       const SizedBox(width: 10),
